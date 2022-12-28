@@ -3,9 +3,8 @@ const v = require('./Validation')
 const domain = require('../domain/PaymentDetails')
 
 class PaymentsController {
-    constructor(paymentRepository, logger) {
+    constructor(paymentRepository) {
         this.paymentRepository = paymentRepository
-        this.logger = logger
     }
 
     async handleGetPaymentMethod(req, res) {
@@ -57,6 +56,11 @@ class PaymentsController {
         res.send({"status":"successful"})
     }
 
+    async handleHealth(req, res) {
+        res.status(200)
+        res.send({"status":"successful"})
+    }
+
     transformToDomainFormat(body) {
 
         const {name} = body
@@ -70,17 +74,17 @@ class PaymentsController {
         let foundError = false
 
         if(nameErrors.length > 0) {
-            this.logger.error(`Name validation errors: ${nameErrors}`)
+            console.error(`Name validation errors: ${nameErrors}`)
             foundError = true
         }
 
         if(addressErrors.length > 0) {
-            this.logger.error(`Address validation errors: ${addressErrors}`)
+            console.error(`Address validation errors: ${addressErrors}`)
             foundError = true
         }
 
         if(cardErrors.length > 0) {
-            this.logger.error(`Card validation errors: ${cardErrors}`)
+            console.error(`Card validation errors: ${cardErrors}`)
             foundError = true
         }
 
@@ -122,12 +126,12 @@ class PaymentsController {
         let foundError = false 
 
         if(typeErrors.length > 0) {
-            this.logger.error(`Process Type validation errors: ${typeErrors}`)
+            console.error(`Process Type validation errors: ${typeErrors}`)
             foundError = true
         }
 
         if(amountErrors.length > 0) {
-            this.logger.error(`Process Type validation errors: ${amountErrors}`)
+            console.error(`Process Type validation errors: ${amountErrors}`)
             foundError = true
         }
 
@@ -147,26 +151,40 @@ class PaymentsController {
     }
 }
 
-module.exports = (repositories, logger) => {
+function doLog(msg) {
+    console.log(msg);
+    // logger.info(msg);
+}
 
-    var controller = new PaymentsController(repositories.paymentsRepository, logger)
+module.exports = (repositories) => {
+
+    var controller = new PaymentsController(repositories.paymentsRepository)
     var express = require('express')
     var router = express.Router()
 
     router.get('/', function (req, res) {
+        doLog('handling Get request.');
         controller.handleGetPaymentMethod(req, res)
     })
 
     router.post('/', function (req, res) {
+        doLog('handling Post request.');
         controller.handleAddPaymentMethod(req, res)
     })
 
     router.delete('/', function (req, res) {
+        doLog('handling Delete request.');
         controller.handleRemovePaymentMethod(req, res)
     })
 
     router.post('/process', function (req, res) {
+        doLog('handling Post to process request.');
         controller.handleProcessPayment(req, res)
+    })
+
+    router.get('/health', function(req, res) {
+        // console.log('health probe')
+        controller.handleHealth(req, res)
     })
 
     return router

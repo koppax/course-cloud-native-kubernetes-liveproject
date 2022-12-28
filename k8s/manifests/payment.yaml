@@ -6,6 +6,8 @@ metadata:
   labels:
     app: payment
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: payment
@@ -26,6 +28,26 @@ spec:
           - name: CONFIG_DIR
             value: "/opt/sns/app/config"
         imagePullPolicy: "Never"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 10Mi
+          limits:
+            cpu: 500m
+            memory: 100Mi
+        livenessProbe:
+          httpGet:
+            path: /api/payment-methods/health
+            port: 3000
+        readinessProbe:
+            initialDelaySeconds: 5
+            httpGet:
+              path: /api/payment-methods/health
+              port: 3000  
+            failureThreshold: 2
+            successThreshold: 1
+
+
 ---
 apiVersion: v1
 kind: Service

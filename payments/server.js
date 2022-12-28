@@ -1,9 +1,7 @@
 const bodyParser = require("body-parser")
 const express = require("express")
-const pino = require('pino')
 
 const config = require("./config")()
-const logger = pino(pino.destination(config.log_file))
 
 const app = express();
 
@@ -13,9 +11,9 @@ const loadRepositories = require("./repositories")
 const loadControllers = require("./controllers")
 
 const repositories = loadRepositories(config)
-loadControllers(app, repositories, logger)
+loadControllers(app, repositories)
 
 const server_port = config.server_port
 app.listen(server_port, () => {
-    logger.info(`Server is running on port ${server_port}.`)
+    console.log(`Server is running on port ${server_port}.`)
 })
